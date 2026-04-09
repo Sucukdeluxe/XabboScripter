@@ -8,11 +8,9 @@ public partial class G
 {
     /// <summary>
     /// Gets the inventory of the user.
-    /// Returns <c>null</c> if the inventory has not yet been loaded.
+    /// Returns null if the inventory has not yet been loaded.
     /// Note that the inventory may be invalidated, in which case
     /// the items will be out of sync with the server.
-    /// Call <see cref="EnsureInventory(int)"/> before accessing this
-    /// property to ensure that the user's inventory has been loaded.
     /// </summary>
     public IInventory? Inventory => _inventoryManager.Inventory;
 

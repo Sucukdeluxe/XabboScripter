@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 
+using Xabbo.Core;
+using Xabbo.Core.Events;
 using Xabbo.Messages;
 using Xabbo.Extension;
 using Xabbo.Core.Game;
@@ -15,6 +17,8 @@ public class GameManager : IGameManager
     private readonly IMessageManager _messages;
     private readonly IRemoteExtension _extension;
     private readonly IGameDataManager _gameDataManager;
+
+    private bool _inventoryAutoLoaded;
 
     public ProfileManager ProfileManager { get; private set; }
     public RoomManager RoomManager { get; private set; }
@@ -53,6 +57,20 @@ public class GameManager : IGameManager
         InventoryManager = inventoryManager;
         PetInventoryManager = petInventoryManager;
         TradeManager = tradeManager;
+
+        RoomManager.Entered += OnRoomEntered;
+    }
+
+    private async void OnRoomEntered(object? sender, RoomEventArgs e)
+    {
+        if (_inventoryAutoLoaded) return;
+        _inventoryAutoLoaded = true;
+
+        var inv = InventoryManager.Inventory;
+        if (inv is not null && !inv.IsInvalidated) return;
+
+        try { await InventoryManager.GetInventoryAsync(30000, _extension.DisconnectToken); }
+        catch { }
     }
 
     private void OnInterceptorConnected(object? sender, EventArgs e)
