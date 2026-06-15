@@ -30,6 +30,11 @@ using Xabbo.Scripter.Services;
 using Xabbo.Scripter.View;
 using Xabbo.Scripter.Engine;
 using Xabbo.Scripter.Util;
+using Xabbo.Scripter.Configuration;
+using Xabbo.Scripter.Mcp;
+using Xabbo.Scripter.Mcp.Server;
+using Xabbo.Scripter.Mcp.Tools;
+using Xabbo.Scripter.Mcp.Integration;
 
 namespace Xabbo.Scripter;
 
@@ -168,6 +173,23 @@ public partial class App : Application
         services.AddSingleton<IScriptHost, ScriptHost>();
         services.AddSingleton<ScriptEngine>();
         services.AddSingleton<AutostartService>();
+
+        // MCP bridge
+        services.AddSingleton(McpConfig.Load());
+        services.AddSingleton<ScripterApiCatalog>();
+        services.AddSingleton<McpClientConfigurator>();
+
+        foreach (Type mcpToolType in Assembly.GetExecutingAssembly().GetTypes().Where(
+            x => x.IsClass && !x.IsAbstract && typeof(IMcpToolProvider).IsAssignableFrom(x)))
+        {
+            Debug.WriteLine($"Registering MCP tool provider: {mcpToolType.Name}");
+            services.AddSingleton(typeof(IMcpToolProvider), mcpToolType);
+        }
+
+        services.AddSingleton<McpToolRegistry>();
+        services.AddSingleton<McpDispatcher>();
+        services.AddSingleton<McpServer>();
+        services.AddHostedService(provider => provider.GetRequiredService<McpServer>());
 
         // View managers
         Type[] localAssemblyTypes = Assembly.GetExecutingAssembly().GetTypes();

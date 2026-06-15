@@ -59,13 +59,28 @@ public partial class ScriptView : UserControl
         {
             oldViewModel.CompileError -= Script_CompileError;
             oldViewModel.RuntimeError -= Script_RuntimeError;
-
+            oldViewModel.CodeReplaced -= Script_CodeReplaced;
         }
 
-        if (_isInitialized && e.NewValue is ScriptViewModel viewModel)
+        if (e.NewValue is ScriptViewModel viewModel)
         {
-            InitializeFromViewModel(viewModel);
+            viewModel.CodeReplaced += Script_CodeReplaced;
+
+            if (_isInitialized)
+                InitializeFromViewModel(viewModel);
         }
+    }
+
+    private void Script_CodeReplaced(object? sender, string code)
+    {
+        if (!CheckAccess())
+        {
+            Dispatcher.InvokeAsync(() => Script_CodeReplaced(sender, code));
+            return;
+        }
+
+        if (codeEditor.Text != code)
+            codeEditor.Text = code;
     }
 
     private void ScriptView_Loaded(object sender, RoutedEventArgs e)

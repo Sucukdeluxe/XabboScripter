@@ -440,6 +440,14 @@ public class ScriptViewModel : ObservableObject, IScript, IDisposable
         RuntimeError?.Invoke(this, new RuntimeErrorEventArgs(error));
     }
 
+    public event EventHandler<string>? CodeReplaced;
+
+    public void ReplaceCode(string code)
+    {
+        Code = code ?? string.Empty;
+        CodeReplaced?.Invoke(this, Code);
+    }
+
     public void Dispose()
     {
         Dispose(true);

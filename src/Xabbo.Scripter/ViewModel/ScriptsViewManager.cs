@@ -243,6 +243,47 @@ public class ScriptsViewManager : ObservableObject
         return scriptViewModel;
     }
 
+    public IReadOnlyList<ScriptViewModel> GetScripts() => _scripts.ToList();
+
+    public ScriptViewModel? FindByFileName(string fileName) =>
+        _scripts.FirstOrDefault(s => s.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+
+    public ScriptViewModel? FindByName(string name) =>
+        _scripts.FirstOrDefault(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+    public ScriptViewModel? FindScript(string reference)
+    {
+        if (string.IsNullOrWhiteSpace(reference)) return null;
+
+        string withExtension = reference.EndsWith(".csx", StringComparison.OrdinalIgnoreCase) ? reference : reference + ".csx";
+
+        return FindByFileName(reference)
+            ?? FindByFileName(withExtension)
+            ?? FindByName(reference);
+    }
+
+    public ScriptViewModel NewScript(string code, bool open)
+    {
+        ScriptModel model = new ScriptModel
+        {
+            FileName = $"script-{++_currentScriptIndex}.csx"
+        };
+
+        ScriptViewModel scriptViewModel = new(_engine, model) { IsLoaded = true };
+        scriptViewModel.SetAutostartService(_autostartService);
+        scriptViewModel.Code = code ?? string.Empty;
+
+        _scripts.Add(scriptViewModel);
+
+        if (open)
+        {
+            OpenTabs.Add(scriptViewModel);
+            SelectedTabItem = scriptViewModel;
+        }
+
+        return scriptViewModel;
+    }
+
     public void AddNewScript()
     {
         ScriptModel model = new ScriptModel
