@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Threading;
+
+using MaterialDesignThemes.Wpf;
 
 using Wpf.Ui.Controls;
 using Wpf.Ui.Controls.Interfaces;
@@ -50,6 +54,43 @@ public partial class MainWindow : UiWindow, INavigationWindow
         Wpf.Ui.Appearance.Theme.Apply(Wpf.Ui.Appearance.ThemeType.Dark, updateAccent: false);
         Wpf.Ui.Appearance.Background.Apply(this, Wpf.Ui.Appearance.BackgroundType.Mica);
         ApplyFallbackBackground(true);
+
+        Dispatcher.InvokeAsync(WarmupUi, DispatcherPriority.ApplicationIdle);
+    }
+
+    private async void WarmupUi()
+    {
+        try
+        {
+            ContextMenu warmMenu = new()
+            {
+                Placement = PlacementMode.Absolute,
+                HorizontalOffset = -10000,
+                VerticalOffset = -10000
+            };
+            warmMenu.Items.Add(new System.Windows.Controls.MenuItem { Header = "warmup" });
+            warmMenu.Opened += (_, _) => warmMenu.IsOpen = false;
+            warmMenu.IsOpen = true;
+        }
+        catch { }
+
+        try
+        {
+            await DialogHost.Show(
+                new TextInputModalViewModel { Message = string.Empty },
+                "Root",
+                new DialogOpenedEventHandler((_, args) => args.Session.Close(false)));
+        }
+        catch { }
+
+        try
+        {
+            await DialogHost.Show(
+                new MessageBoxViewModel { Message = string.Empty, Buttons = MessageBoxButton.YesNo },
+                "Root",
+                new DialogOpenedEventHandler((_, args) => args.Session.Close(false)));
+        }
+        catch { }
     }
 
     internal void ApplyFallbackBackground(bool dark)

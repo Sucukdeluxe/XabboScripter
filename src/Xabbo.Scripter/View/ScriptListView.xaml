@@ -38,6 +38,8 @@
         />
         <DataGrid
             Grid.Row="1"
+            VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+            VirtualizingPanel.VirtualizationMode="Recycling"
             ItemsSource="{Binding Scripts}"
             SelectionChanged="DataGrid_SelectionChanged"
             AutoGenerateColumns="False"

@@ -118,7 +118,7 @@ public partial class ScriptView : UserControl
 
     private void CodeEditor_Loaded(object sender, RoutedEventArgs e)
     {
-        Loaded -= CodeEditor_Loaded;
+        codeEditor.Loaded -= CodeEditor_Loaded;
 
         using (Stream s = File.OpenRead("theme.xshd"))
         {

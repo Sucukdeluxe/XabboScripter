@@ -117,7 +117,7 @@
         <Grid Margin="0,26,0,0">
             <Grid.Style>
                 <Style TargetType="{x:Type Grid}">
-                    <Setter Property="Visibility" Value="Hidden" />
+                    <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding SelectedTabIndex}" Value="-1">
                             <Setter Property="Visibility" Value="Visible" />

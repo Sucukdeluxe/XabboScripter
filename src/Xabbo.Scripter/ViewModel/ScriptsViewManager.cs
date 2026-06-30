@@ -454,7 +454,6 @@ public class ScriptsViewManager : ObservableObject
             }
 
             script.Name = string.Empty;
-            Scripts.Refresh();
         }
         catch (Exception ex)
         {
@@ -554,7 +553,8 @@ public class ScriptsViewManager : ObservableObject
     {
         foreach (ScriptViewModel viewModel in _scripts)
         {
-            viewModel.UpdateRuntime();
+            if (viewModel.IsRunning)
+                viewModel.UpdateRuntime();
         }
     }
 }

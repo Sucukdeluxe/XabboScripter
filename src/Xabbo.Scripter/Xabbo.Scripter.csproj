@@ -8,6 +8,7 @@
 		<RootNamespace>Xabbo.Scripter</RootNamespace>
 		<ApplicationIcon>Resources\xs.ico</ApplicationIcon>
 		<Configurations>Debug;Release;Develop</Configurations>
+		<PublishReadyToRun>true</PublishReadyToRun>
 	</PropertyGroup>
 
 	<PropertyGroup Label="Rename paths">
