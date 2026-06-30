@@ -148,34 +148,18 @@ public class ScriptEngine
                 filePath = Path.GetFullPath(filePath);
             }
 
-            Script<object> csharpScript;
-
             if (script.IsSavedToDisk)
             {
                 script.Save();
             }
 
-            if (File.Exists(filePath))
-            {
-                using FileStream fs = File.OpenRead(filePath);
-                csharpScript = CSharpScript.Create(
-                    fs,
-                    options: BaseScriptOptions
-                        .WithFilePath(filePath)
-                        .WithFileEncoding(Encoding.UTF8),
-                    globalsType: typeof(G)
-                );
-            }
-            else
-            {
-                csharpScript = CSharpScript.Create(
-                    script.Code,
-                    options: BaseScriptOptions
-                        .WithFilePath(filePath)
-                        .WithFileEncoding(Encoding.UTF8),
-                    globalsType: typeof(G)
-                );
-            }
+            Script<object> csharpScript = CSharpScript.Create(
+                script.Code,
+                options: BaseScriptOptions
+                    .WithFilePath(filePath)
+                    .WithFileEncoding(Encoding.UTF8),
+                globalsType: typeof(G)
+            );
 
             ImmutableArray<Diagnostic> diagnostics = csharpScript.Compile();
             if (diagnostics.Any(x => x.Severity == DiagnosticSeverity.Error))
