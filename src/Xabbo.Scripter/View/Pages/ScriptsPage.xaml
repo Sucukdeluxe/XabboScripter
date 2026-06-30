@@ -61,7 +61,17 @@
 
             <dragablz:TabablzControl.HeaderItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal"
+                                Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type dragablz:TabablzControl}}}">
+                        <StackPanel.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem
+                                    Header="Rename"
+                                    Command="{Binding PlacementTarget.Tag.RenameScriptCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                    CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                />
+                            </ContextMenu>
+                        </StackPanel.ContextMenu>
                         <TextBlock Text="{Binding Header}" VerticalAlignment="Center" />
                         <ui:ProgressRing
                             Margin="4,0,0,0"

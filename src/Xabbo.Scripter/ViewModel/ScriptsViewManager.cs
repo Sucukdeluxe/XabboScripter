@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Windows;
@@ -62,16 +63,7 @@ public class ScriptsViewManager : ObservableObject
     public int SelectedTabIndex
     {
         get => _selectedTabIndex;
-        set
-        {
-            if (Set(ref _selectedTabIndex, value))
-            {
-                if (value == -1)
-                {
-                    Scripts.Refresh();
-                }
-            }
-        }
+        set => Set(ref _selectedTabIndex, value);
     }
 
     public IList SelectedItems { get; set; } = new List<ScriptViewModel>();
@@ -93,6 +85,7 @@ public class ScriptsViewManager : ObservableObject
     public ICommand OpenScriptListCommand { get; }
     public ICommand NewTabCommand { get; }
     public ICommand CloseTabCommand { get; }
+    public ICommand RenameScriptCommand { get; }
 
     public ICommand SaveScriptCommand { get; }
     public ICommand DeleteSelectedScriptsCommand { get; }
@@ -125,6 +118,7 @@ public class ScriptsViewManager : ObservableObject
         _autostartService = autostartService;
 
         _scripts = new ObservableCollection<ScriptViewModel>();
+        _scripts.CollectionChanged += OnScriptsCollectionChanged;
         Scripts = CollectionViewSource.GetDefaultView(_scripts);
         Scripts.SortDescriptions.Add(new SortDescription(nameof(ScriptViewModel.Group), ListSortDirection.Ascending));
         Scripts.SortDescriptions.Add(new SortDescription(nameof(ScriptViewModel.Name), ListSortDirection.Ascending));
@@ -145,6 +139,7 @@ public class ScriptsViewManager : ObservableObject
         OpenScriptListCommand = new RelayCommand(OpenScriptList);
         NewTabCommand = new RelayCommand(AddNewScript);
         CloseTabCommand = new RelayCommand(CloseCurrentScript);
+        RenameScriptCommand = new RelayCommand<ScriptViewModel>(RenameScript);
 
         SaveScriptCommand = new RelayCommand(SaveCurrentScript);
         DeleteSelectedScriptsCommand = new RelayCommand(DeleteSelectedScripts);
@@ -164,6 +159,27 @@ public class ScriptsViewManager : ObservableObject
         _fsw.Changed += (s, e) => _fileUpdate.OnNext(e);
         _fsw.Deleted += (s, e) => _fileUpdate.OnNext(e);
         _fsw.EnableRaisingEvents = true;
+    }
+
+    private void OnScriptsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems is not null)
+        {
+            foreach (ScriptViewModel script in e.OldItems)
+                script.PropertyChanged -= OnScriptPropertyChanged;
+        }
+
+        if (e.NewItems is not null)
+        {
+            foreach (ScriptViewModel script in e.NewItems)
+                script.PropertyChanged += OnScriptPropertyChanged;
+        }
+    }
+
+    private void OnScriptPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ScriptViewModel.Name) || e.PropertyName == nameof(ScriptViewModel.Group))
+            Scripts.Refresh();
     }
 
     private bool FilterScripts(object obj)
@@ -372,6 +388,77 @@ public class ScriptsViewManager : ObservableObject
         catch (Exception ex)
         {
             _snackbar.Enqueue($"Failed to save file to disk: {ex.Message}");
+        }
+    }
+
+    private async void RenameScript(ScriptViewModel? script)
+    {
+        if (script is null) return;
+
+        string currentName = script.FileName.EndsWith(".csx", StringComparison.OrdinalIgnoreCase)
+            ? script.FileName[..^4]
+            : script.FileName;
+
+        TextInputModalViewModel textInputModal = new TextInputModalViewModel()
+        {
+            Message = "Enter a new name.",
+            InputText = currentName,
+            InputSuffix = ".csx"
+        };
+
+        textInputModal.ValidateInput = input =>
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return new ValidationResult("Name cannot be empty.");
+            if (input.IndexOfAny(Path.GetInvalidFileNameChars()) != -1)
+                return new ValidationResult("File name contains invalid characters.");
+            string candidate = $"{input}.csx";
+            if (!candidate.Equals(script.FileName, StringComparison.OrdinalIgnoreCase) &&
+                File.Exists(Path.Combine(Engine.ScriptDirectory, candidate)))
+                return new ValidationResult("A file with that name already exists.");
+            return ValidationResult.Success;
+        };
+
+        object? result = await DialogHost.Show(textInputModal);
+        if (result is not bool booleanResult || !booleanResult) return;
+
+        string newFileName = $"{textInputModal.InputText}.csx";
+        if (newFileName.Equals(script.FileName, StringComparison.OrdinalIgnoreCase)) return;
+
+        try
+        {
+            if (script.IsSavedToDisk)
+            {
+                string source = Path.Combine(Engine.ScriptDirectory, script.FileName);
+                string target = Path.Combine(Engine.ScriptDirectory, newFileName);
+
+                if (File.Exists(target))
+                {
+                    _snackbar.Enqueue("A script with that file name already exists.");
+                    return;
+                }
+
+                bool wasAutostart = script.IsAutostart;
+                if (wasAutostart)
+                    script.IsAutostart = false;
+
+                File.Move(source, target);
+                script.FileName = newFileName;
+
+                if (wasAutostart)
+                    script.IsAutostart = true;
+            }
+            else
+            {
+                script.FileName = newFileName;
+            }
+
+            script.Name = string.Empty;
+            Scripts.Refresh();
+        }
+        catch (Exception ex)
+        {
+            _snackbar.Enqueue($"Failed to rename script: {ex.Message}");
         }
     }
 

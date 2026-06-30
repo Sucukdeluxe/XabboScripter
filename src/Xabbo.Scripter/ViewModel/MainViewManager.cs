@@ -90,7 +90,11 @@ public class MainViewManager : ObservableObject
     {
         try
         {
-            await Task.Run(() => _scriptEngine.Initialize(), cancellationToken).ConfigureAwait(false);
+            await Task.Run(() =>
+            {
+                _scriptEngine.Initialize();
+                _scriptEngine.Warmup();
+            }, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation($"xabbo scripter initialized.");
 
