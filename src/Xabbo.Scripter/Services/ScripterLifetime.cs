@@ -23,6 +23,7 @@ public class ScripterLifetime : IHostLifetime
     private readonly IRemoteExtension _extension;
     private readonly MainViewManager _mainViewManager;
     private bool _windowInitialized;
+    private bool _shownOnce;
 
     public ScripterLifetime(
         IHostApplicationLifetime lifetime,
@@ -50,6 +51,8 @@ public class ScripterLifetime : IHostLifetime
         }
 
         _lifetime.ApplicationStarted.Register(OnApplicationStarted);
+
+        _extension.Initialized += OnExtensionInitialized;
     }
 
     private void OnApplicationStarted()
@@ -66,6 +69,13 @@ public class ScripterLifetime : IHostLifetime
     }
 
     private void OnExtensionClicked(object? sender, EventArgs e) => BringToFront();
+
+    private void OnExtensionInitialized(object? sender, ExtensionInitializedEventArgs e)
+    {
+        if (_shownOnce) return;
+        _shownOnce = true;
+        BringToFront();
+    }
 
     public void BringToFront()
     {
