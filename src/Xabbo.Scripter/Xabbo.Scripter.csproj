@@ -17,10 +17,10 @@
 	</PropertyGroup>
 
 	<PropertyGroup Label="Version">
-		<Version>1.1.6.4</Version>
-		<AssemblyVersion>1.1.6.4</AssemblyVersion>
-		<FileVersion>1.1.6.4</FileVersion>
-		<InformationalVersion>1.1.6.4</InformationalVersion>
+		<Version>1.1.6.5</Version>
+		<AssemblyVersion>1.1.6.5</AssemblyVersion>
+		<FileVersion>1.1.6.5</FileVersion>
+		<InformationalVersion>1.1.6.5</InformationalVersion>
 	</PropertyGroup>
 
   <ItemGroup Label="Include resources">
@@ -65,6 +65,9 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="theme.xshd">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="theme-dark.xshd">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Include="..\..\lib\Xabbo.Messages\messages.ini">

@@ -120,15 +120,14 @@ public partial class ScriptView : UserControl
     {
         codeEditor.Loaded -= CodeEditor_Loaded;
 
-        using (Stream s = File.OpenRead("theme.xshd"))
-        {
-            using XmlTextReader reader = new XmlTextReader(s);
-            codeEditor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
-        }
+        _settings = App.Services.GetService(typeof(ViewModel.SettingsViewManager)) as ViewModel.SettingsViewManager;
+        bool dark = _settings?.EditorDarkMode ?? false;
+
+        LoadHighlighting(dark);
 
         codeEditor.Initialize(
             Script.Engine.RoslynHost,
-            new ClassificationHighlightColors(),
+            dark ? new DarkClassificationHighlightColors() : new ClassificationHighlightColors(),
             Path.GetFullPath("Scripts"),
             string.Empty,
             SourceCodeKind.Script
@@ -137,13 +136,20 @@ public partial class ScriptView : UserControl
 
         _isInitialized = true;
 
-        _settings = App.Services.GetService(typeof(ViewModel.SettingsViewManager)) as ViewModel.SettingsViewManager;
         if (_settings != null)
         {
             _settings.PropertyChanged += OnSettingsChanged;
             Unloaded += OnScriptViewUnloaded;
-            ApplyEditorTheme(_settings.EditorDarkMode);
         }
+
+        ApplyEditorTheme(dark);
+    }
+
+    private void LoadHighlighting(bool dark)
+    {
+        using Stream s = File.OpenRead(dark ? "theme-dark.xshd" : "theme.xshd");
+        using XmlTextReader reader = new XmlTextReader(s);
+        codeEditor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
     }
 
     private ViewModel.SettingsViewManager? _settings;
@@ -163,13 +169,17 @@ public partial class ScriptView : UserControl
 
     private void ApplyEditorTheme(bool dark)
     {
+        LoadHighlighting(dark);
+
         System.Windows.Media.Brush bg = dark
             ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x1E, 0x1E, 0x1E))
             : System.Windows.Media.Brushes.White;
         editorContainer.Background = bg;
         overlayCanvas.Background = bg;
         codeEditor.CompletionBackground = bg;
-        codeEditor.Foreground = dark ? System.Windows.Media.Brushes.White : System.Windows.Media.Brushes.Black;
+        codeEditor.Foreground = dark
+            ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xD4, 0xD4, 0xD4))
+            : System.Windows.Media.Brushes.Black;
         RoslynPad.Editor.IClassificationHighlightColors colors = dark
             ? new DarkClassificationHighlightColors()
             : new ClassificationHighlightColors();

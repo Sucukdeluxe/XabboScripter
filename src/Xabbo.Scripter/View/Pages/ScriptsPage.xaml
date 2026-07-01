@@ -44,20 +44,12 @@
             </dragablz:TabablzControl.HeaderPrefixContent>
 
             <dragablz:TabablzControl.HeaderSuffixContent>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:ToggleSwitch
-                        Margin="4,0"
-                        VerticalAlignment="Center"
-                        IsChecked="{Binding Settings.EditorDarkMode, Mode=TwoWay}"
-                        ToolTip="Editor Dark Mode"
-                    />
-                    <ui:Button
-                        Margin="4" Padding="2"
-                        Icon="Add24"
-                        BorderThickness="0"
-                        Command="{Binding NewTabCommand}"
-                    />
-                </StackPanel>
+                <ui:Button
+                    Margin="4" Padding="2"
+                    Icon="Add24"
+                    BorderThickness="0"
+                    Command="{Binding NewTabCommand}"
+                />
             </dragablz:TabablzControl.HeaderSuffixContent>
 
             <dragablz:TabablzControl.ItemContainerStyle>

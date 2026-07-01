@@ -33,6 +33,12 @@
         >
             <ui:TitleBar.Header>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <ui:ToggleSwitch
+                        Margin="4,2"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Scripts.Settings.EditorDarkMode, Mode=TwoWay}"
+                        ToolTip="Editor Dark Mode"
+                    />
                     <ui:Button
                         DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                         Padding="2" Margin="4,2"
