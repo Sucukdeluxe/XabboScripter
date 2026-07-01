@@ -104,11 +104,14 @@ public class ScriptsViewManager : ObservableObject
         }
     }
 
+    public SettingsViewManager Settings { get; }
+
     public ScriptsViewManager(
         IUiContext uiContext,
         ScriptEngine engine,
         ISnackbarMessageQueue snackbar,
-        AutostartService autostartService)
+        AutostartService autostartService,
+        SettingsViewManager settings)
     {
         InterTabClient = new ScripterInterTabClient(this);
 
@@ -116,6 +119,7 @@ public class ScriptsViewManager : ObservableObject
         _engine = engine;
         _snackbar = snackbar;
         _autostartService = autostartService;
+        Settings = settings;
 
         _scripts = new ObservableCollection<ScriptViewModel>();
         _scripts.CollectionChanged += OnScriptsCollectionChanged;

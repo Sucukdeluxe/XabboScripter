@@ -136,6 +136,47 @@ public partial class ScriptView : UserControl
         codeEditor.TextArea.LeftMargins.RemoveAt(1);
 
         _isInitialized = true;
+
+        _settings = App.Services.GetService(typeof(ViewModel.SettingsViewManager)) as ViewModel.SettingsViewManager;
+        if (_settings != null)
+        {
+            _settings.PropertyChanged += OnSettingsChanged;
+            Unloaded += OnScriptViewUnloaded;
+            ApplyEditorTheme(_settings.EditorDarkMode);
+        }
+    }
+
+    private ViewModel.SettingsViewManager? _settings;
+
+    private void OnSettingsChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ViewModel.SettingsViewManager.EditorDarkMode) && _settings != null)
+            ApplyEditorTheme(_settings.EditorDarkMode);
+    }
+
+    private void OnScriptViewUnloaded(object? sender, RoutedEventArgs e)
+    {
+        if (_settings != null)
+            _settings.PropertyChanged -= OnSettingsChanged;
+        Unloaded -= OnScriptViewUnloaded;
+    }
+
+    private void ApplyEditorTheme(bool dark)
+    {
+        System.Windows.Media.Brush bg = dark
+            ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x1E, 0x1E, 0x1E))
+            : System.Windows.Media.Brushes.White;
+        editorContainer.Background = bg;
+        overlayCanvas.Background = bg;
+        codeEditor.CompletionBackground = bg;
+        codeEditor.Foreground = dark ? System.Windows.Media.Brushes.White : System.Windows.Media.Brushes.Black;
+        RoslynPad.Editor.IClassificationHighlightColors colors = dark
+            ? new DarkClassificationHighlightColors()
+            : new ClassificationHighlightColors();
+        typeof(RoslynPad.Editor.RoslynCodeEditor)
+            .GetField("_classificationHighlightColors", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.SetValue(codeEditor, colors);
+        codeEditor.RefreshHighlighting();
     }
 
     private void CodeEditor_CreatingDocument(object? sender, CreatingDocumentEventArgs e)

@@ -49,6 +49,20 @@ public class SettingsViewManager : ObservableObject
         }
     }
 
+    public bool EditorDarkMode
+    {
+        get => _settings.EditorDarkMode;
+        set
+        {
+            if (_settings.EditorDarkMode == value) return;
+
+            _settings.EditorDarkMode = value;
+            Save();
+
+            RaisePropertyChanged();
+        }
+    }
+
     public SettingsViewManager()
     {
         if (File.Exists(FilePath))

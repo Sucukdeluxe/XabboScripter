@@ -25,7 +25,7 @@
             </Grid.RowDefinitions>
 
             <!-- Code editor -->
-            <Grid Background="White">
+            <Grid x:Name="editorContainer" Background="White">
                 <Grid.Resources>
                     <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource MaterialDesignScrollBar}">
                         <Setter Property="md:ThemeAssist.Theme" Value="Light" />

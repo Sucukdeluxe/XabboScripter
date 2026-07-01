@@ -51,6 +51,8 @@ public partial class App : Application
     private IHost _host = null!;
     private Mutex? _mutex;
 
+    public static System.IServiceProvider Services => ((App)Current)._host.Services;
+
     public App() { }
 
     protected override void OnStartup(StartupEventArgs e)

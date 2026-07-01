@@ -6,4 +6,5 @@ public class Settings
 {
     public bool DarkMode { get; set; } = true;
     public bool ShowUserName { get; set; } = true;
+    public bool EditorDarkMode { get; set; } = false;
 }
